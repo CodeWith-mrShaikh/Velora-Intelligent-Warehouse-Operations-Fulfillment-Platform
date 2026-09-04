@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.*.local
+*.db
+*.db-journal
+coverage/
+.DS_Store
+Thumbs.db
+*.log
+.system_generated/
+scratch/
+.vscode/
+.idea/

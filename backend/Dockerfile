@@ -22,12 +22,12 @@ ENV PORT=5000
 
 COPY package*.json ./
 COPY prisma ./prisma/
+COPY scripts ./scripts/
 
-RUN npm ci --only=production
-RUN npx prisma generate
+RUN npm ci
 
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 5000
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "scripts/start.js"]

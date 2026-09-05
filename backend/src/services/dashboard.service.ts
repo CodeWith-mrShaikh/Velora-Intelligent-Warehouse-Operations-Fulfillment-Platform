@@ -132,26 +132,81 @@ export class DashboardService {
   static async getBinUtilization() {
     const bins = await prisma.bin.findMany({
       where: { status: 'ACTIVE' },
-      include: { inventories: true }
+      include: {
+        inventories: true,
+        row: {
+          select: { code: true, name: true }
+        }
+      },
+      orderBy: { locationCode: 'asc' }
     });
 
-    return bins.map(bin => {
+    let totalCapacity = 0;
+    let totalOccupiedUnits = 0;
+    let emptyCount = 0;
+    let lowCount = 0;
+    let midCount = 0;
+    let highCount = 0;
+
+    const formattedBins = bins.map(bin => {
       const currentQuantity = bin.inventories.reduce((sum, inv) => sum + inv.onHandQuantity, 0);
-      const utilization = bin.capacity > 0 ? (currentQuantity / bin.capacity) * 100 : 0;
+      const utilization = bin.capacity > 0 ? Math.round((currentQuantity / bin.capacity) * 100) : 0;
       
+      totalCapacity += bin.capacity;
+      totalOccupiedUnits += currentQuantity;
+
       let status = 'AVAILABLE';
-      if (utilization === 0) status = 'EMPTY';
-      else if (utilization >= 100) status = 'FULL';
-      else if (utilization >= 80) status = 'NEAR_CAPACITY';
+      if (currentQuantity === 0) {
+        status = 'EMPTY';
+        emptyCount++;
+      } else if (utilization <= 30) {
+        status = 'AVAILABLE';
+        lowCount++;
+      } else if (utilization <= 70) {
+        status = 'MODERATE';
+        midCount++;
+      } else {
+        status = 'FULL';
+        highCount++;
+      }
 
       return {
         id: bin.id,
+        code: bin.code,
         locationCode: bin.locationCode,
+        rowCode: bin.row?.code || 'A01',
+        rowName: bin.row?.name || '',
         capacity: bin.capacity,
         currentQuantity,
+        availableCapacity: Math.max(0, bin.capacity - currentQuantity),
         utilization,
         status
       };
     });
+
+    const totalBins = bins.length;
+    const occupiedBins = totalBins - emptyCount;
+    const totalFreeUnits = Math.max(0, totalCapacity - totalOccupiedUnits);
+    const overallUtilizationPercent = totalCapacity > 0 ? Math.round((totalOccupiedUnits / totalCapacity) * 100) : 0;
+
+    const ranges = [
+      { range: '0-30% (Available)', count: lowCount + emptyCount, color: '#10b981' },
+      { range: '31-70% (Moderate)', count: midCount, color: '#f59e0b' },
+      { range: '71-100% (Near Full/Full)', count: highCount, color: '#ef4444' }
+    ];
+
+    return {
+      bins: formattedBins,
+      stats: {
+        totalBins,
+        occupiedBins,
+        availableBins: emptyCount,
+        totalCapacity,
+        totalOccupiedUnits,
+        totalFreeUnits,
+        overallUtilizationPercent
+      },
+      ranges
+    };
   }
 }

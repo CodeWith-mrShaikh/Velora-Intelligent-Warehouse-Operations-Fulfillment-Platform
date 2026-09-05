@@ -164,7 +164,39 @@ export interface LowStockItem {
   reorderLevel: number;
 }
 
-export interface BinUtilization {
+export interface BinUtilizationItem {
+  id: string;
+  code: string;
+  locationCode: string;
+  rowCode: string;
+  rowName?: string;
+  capacity: number;
+  currentQuantity: number;
+  availableCapacity: number;
+  utilization: number;
+  status: 'EMPTY' | 'AVAILABLE' | 'MODERATE' | 'FULL';
+}
+
+export interface BinUtilizationStats {
+  totalBins: number;
+  occupiedBins: number;
+  availableBins: number;
+  totalCapacity: number;
+  totalOccupiedUnits: number;
+  totalFreeUnits: number;
+  overallUtilizationPercent: number;
+}
+
+export interface BinUtilizationRange {
   range: string;
   count: number;
+  color?: string;
 }
+
+export interface BinUtilizationResponse {
+  bins: BinUtilizationItem[];
+  stats: BinUtilizationStats;
+  ranges: BinUtilizationRange[];
+}
+
+export type BinUtilization = BinUtilizationResponse;

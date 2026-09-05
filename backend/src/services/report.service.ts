@@ -128,7 +128,7 @@ export class ReportService {
   }
 
   static async generateBinUtilizationReport() {
-    const bins = await DashboardService.getBinUtilization();
+    const { bins } = await DashboardService.getBinUtilization();
     const columns = [
       { key: 'locationCode', label: 'Location' },
       { key: 'capacity', label: 'Capacity' },

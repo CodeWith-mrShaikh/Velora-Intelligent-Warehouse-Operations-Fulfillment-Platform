@@ -37,9 +37,9 @@ const DashboardPage: React.FC = () => {
           <h3 className="text-lg font-semibold text-slate-800 mb-4">Stock by Row</h3>
           {isLoadingRowStock ? <LoadingSpinner /> : <StockByRowChart data={rowStock || []} />}
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <h3 className="text-lg font-semibold text-slate-800 mb-4">Bin Utilization</h3>
-          {isLoadingBinUtil ? <LoadingSpinner /> : <BinUtilizationChart data={binUtil || []} />}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 className="text-lg font-semibold text-slate-800 mb-3">Warehouse Bin Utilization</h3>
+          {isLoadingBinUtil ? <LoadingSpinner /> : <BinUtilizationChart data={binUtil} />}
         </div>
       </div>
 

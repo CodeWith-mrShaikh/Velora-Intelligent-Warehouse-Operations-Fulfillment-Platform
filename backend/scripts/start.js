@@ -45,22 +45,6 @@ async function init() {
     }
   }
 
-  console.log('⚡ Ensuring bins have ample capacity for inwarding and storage...');
-  try {
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
-    const updateResult = await prisma.bin.updateMany({
-      where: { capacity: { lt: 2000 } },
-      data: { capacity: 2000 }
-    });
-    if (updateResult.count > 0) {
-      console.log(`✅ Updated ${updateResult.count} bins to minimum 2000 capacity.`);
-    }
-    await prisma.$disconnect();
-  } catch (err) {
-    console.warn('⚠️ Bin capacity update warning:', err.message);
-  }
-
   console.log('🚀 Starting Velora Express Server...');
   require('../dist/server.js');
 }

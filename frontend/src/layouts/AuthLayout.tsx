@@ -11,10 +11,10 @@ const AuthLayout: React.FC = () => {
             <Package className="w-12 h-12 text-white" />
           </div>
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
+        <h2 className="mt-6 text-center text-4xl font-extrabold text-slate-900 tracking-tight">
           Velora
         </h2>
-        <p className="mt-2 text-center text-sm text-slate-500 font-medium">
+        <p className="mt-2 text-center text-base sm:text-lg text-slate-600 font-semibold">
           Intelligent Warehouse Operations &amp; Fulfillment Platform
         </p>
       </div>

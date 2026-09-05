@@ -33,7 +33,7 @@ const DashboardLayout: React.FC = () => {
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between h-16 px-4 border-b border-slate-700">
-          <span className="text-xl font-bold text-blue-400">Velora</span>
+          <span className="text-2xl font-extrabold text-blue-400 tracking-wide">Velora</span>
           <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-400 hover:text-white">
             <X size={24} />
           </button>
@@ -63,7 +63,7 @@ const DashboardLayout: React.FC = () => {
             <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-slate-500 hover:text-slate-700 mr-4">
               <Menu size={24} />
             </button>
-            <div className="hidden sm:block text-slate-500 font-medium text-sm">
+            <div className="hidden sm:block text-slate-800 font-bold text-base lg:text-xl tracking-tight">
               Velora — Intelligent Warehouse Operations &amp; Fulfillment Platform
             </div>
           </div>

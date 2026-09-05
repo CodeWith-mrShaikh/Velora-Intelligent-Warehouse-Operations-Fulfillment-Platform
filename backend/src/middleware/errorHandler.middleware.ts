@@ -7,7 +7,7 @@ import { ZodError } from 'zod';
 export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   let statusCode = 500;
   let code = 'INTERNAL_ERROR';
-  let message = 'An unexpected error occurred';
+  let message = err.message || 'An unexpected error occurred';
 
   if (err instanceof AppError) {
     statusCode = err.statusCode;

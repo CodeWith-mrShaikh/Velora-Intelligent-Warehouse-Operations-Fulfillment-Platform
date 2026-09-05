@@ -57,6 +57,8 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose, p
   }, [isOpen, preselectedItem]);
 
   const selectedDestBin = bins.find(b => b.id === destinationBinId);
+  const destFreeSpace = selectedDestBin ? Math.max(0, selectedDestBin.capacity - (selectedDestBin.currentQuantity ?? 0)) : 0;
+  const isDestCapacityExceeded = selectedDestBin && quantity !== '' && Number(quantity) > destFreeSpace;
 
   const mutation = useMutation({
     mutationFn: transferStock,
@@ -98,6 +100,10 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose, p
     }
     if (preselectedItem?.available !== undefined && Number(quantity) > preselectedItem.available) {
       toast.error(`Quantity exceeds available stock (${preselectedItem.available})`);
+      return;
+    }
+    if (selectedDestBin && Number(quantity) > destFreeSpace) {
+      toast.error(`Destination bin capacity exceeded! Only ${destFreeSpace} units of space available.`);
       return;
     }
 
@@ -166,19 +172,35 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose, p
               required
             >
               <option value="">Select destination bin</option>
-              {bins.filter(b => b.id !== sourceBinId).map((b: any) => (
-                <option key={b.id} value={b.id}>
-                  {b.locationCode} (Space: {Math.max(0, b.capacity - (b.currentQuantity ?? 0))})
-                </option>
-              ))}
+              {bins.filter(b => b.id !== sourceBinId).map((b: any) => {
+                const space = Math.max(0, b.capacity - (b.currentQuantity ?? 0));
+                return (
+                  <option key={b.id} value={b.id} disabled={space === 0}>
+                    {b.locationCode} — {space === 0 ? '⛔ FULL (0 space)' : `Free: ${space} units`} (Max: {b.capacity})
+                  </option>
+                );
+              })}
             </select>
             {selectedDestBin && (
-              <span className="text-xs text-slate-500 mt-1 block">
-                Free space: <b className="text-blue-600">{Math.max(0, selectedDestBin.capacity - (selectedDestBin.currentQuantity ?? 0))} units</b>
+              <span className={`text-xs mt-1 block font-medium ${destFreeSpace === 0 ? 'text-red-600' : 'text-slate-600'}`}>
+                Available space: <b className={destFreeSpace === 0 ? 'text-red-600' : 'text-blue-600'}>{destFreeSpace} units</b> (Max: {selectedDestBin.capacity})
               </span>
             )}
           </div>
         </div>
+
+        {isDestCapacityExceeded && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 flex items-start space-x-2">
+            <span className="text-base leading-none">⚠️</span>
+            <div>
+              <p className="font-semibold">Destination Bin Capacity Exceeded</p>
+              <p className="mt-0.5">
+                Bin <b>{selectedDestBin?.locationCode}</b> only has <b>{destFreeSpace}</b> units of space available, but you entered <b>{quantity}</b> units.
+              </p>
+              <p className="mt-1 text-rose-600 font-medium">Please select a different destination bin with enough capacity or reduce the transfer quantity.</p>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Quantity to Transfer</label>

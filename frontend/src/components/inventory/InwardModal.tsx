@@ -53,8 +53,6 @@ export const InwardModal: React.FC<InwardModalProps> = ({ isOpen, onClose, prese
     }
   }, [isOpen, preselectedItem]);
 
-  const selectedBin = bins.find(b => b.id === binId);
-
   const mutation = useMutation({
     mutationFn: inwardStock,
     onSuccess: () => {
@@ -71,6 +69,10 @@ export const InwardModal: React.FC<InwardModalProps> = ({ isOpen, onClose, prese
     }
   });
 
+  const selectedBin = bins.find(b => b.id === binId);
+  const binFreeSpace = selectedBin ? Math.max(0, selectedBin.capacity - (selectedBin.currentQuantity ?? 0)) : 0;
+  const isBinCapacityExceeded = selectedBin && quantity !== '' && Number(quantity) > binFreeSpace;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!productId) {
@@ -83,6 +85,10 @@ export const InwardModal: React.FC<InwardModalProps> = ({ isOpen, onClose, prese
     }
     if (!quantity || Number(quantity) <= 0) {
       toast.error('Quantity must be greater than 0');
+      return;
+    }
+    if (selectedBin && Number(quantity) > binFreeSpace) {
+      toast.error(`Bin capacity exceeded! Only ${binFreeSpace} units of space available.`);
       return;
     }
 
@@ -130,20 +136,36 @@ export const InwardModal: React.FC<InwardModalProps> = ({ isOpen, onClose, prese
               required
             >
               <option value="">Select a bin</option>
-              {bins.map((b: any) => (
-                <option key={b.id} value={b.id}>
-                  {b.locationCode} (Capacity: {b.currentQuantity ?? 0}/{b.capacity})
-                </option>
-              ))}
+              {bins.map((b: any) => {
+                const space = Math.max(0, b.capacity - (b.currentQuantity ?? 0));
+                return (
+                  <option key={b.id} value={b.id} disabled={space === 0}>
+                    {b.locationCode} — {space === 0 ? '⛔ FULL (0 space)' : `Free: ${space} units`} (Max: {b.capacity})
+                  </option>
+                );
+              })}
             </select>
           )}
           {selectedBin && (
             <div className="mt-1 text-xs text-slate-500 flex justify-between">
               <span>Current Stock: <b>{selectedBin.currentQuantity ?? 0}</b></span>
-              <span>Available Space: <b className="text-blue-600">{Math.max(0, selectedBin.capacity - (selectedBin.currentQuantity ?? 0))} units</b></span>
+              <span>Available Space: <b className={binFreeSpace === 0 ? 'text-red-600' : 'text-blue-600'}>{binFreeSpace} units</b> (Max: {selectedBin.capacity})</span>
             </div>
           )}
         </div>
+
+        {isBinCapacityExceeded && (
+          <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 flex items-start space-x-2">
+            <span className="text-base leading-none">⚠️</span>
+            <div>
+              <p className="font-semibold">Bin Capacity Exceeded</p>
+              <p className="mt-0.5">
+                Bin <b>{selectedBin?.locationCode}</b> only has <b>{binFreeSpace}</b> units of space available, but you entered <b>{quantity}</b> units.
+              </p>
+              <p className="mt-1 text-rose-600 font-medium">Please choose a bin with more available space or reduce the inward quantity.</p>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Quantity to Inward</label>

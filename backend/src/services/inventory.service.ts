@@ -108,8 +108,9 @@ export class InventoryService {
       if (!product) throw new NotFoundError('Product not found');
 
       const currentBinQty = bin.inventories.reduce((sum, inv) => sum + inv.onHandQuantity, 0);
+      const availableSpace = Math.max(0, bin.capacity - currentBinQty);
       if (currentBinQty + data.quantity > bin.capacity) {
-        throw new InsufficientCapacityError('Bin capacity exceeded');
+        throw new InsufficientCapacityError(`Bin capacity exceeded! Bin ${bin.locationCode} has only ${availableSpace} units of space available (tried to add ${data.quantity}, max capacity: ${bin.capacity})`);
       }
 
       const inventory = await tx.inventory.upsert({
@@ -214,8 +215,9 @@ export class InventoryService {
       if (!destBin || destBin.status !== 'ACTIVE') throw new NotFoundError('Destination bin not found or inactive');
 
       const currentDestQty = destBin.inventories.reduce((sum, inv) => sum + inv.onHandQuantity, 0);
+      const availableDestSpace = Math.max(0, destBin.capacity - currentDestQty);
       if (currentDestQty + data.quantity > destBin.capacity) {
-        throw new InsufficientCapacityError('Destination bin capacity exceeded');
+        throw new InsufficientCapacityError(`Destination bin capacity exceeded! Bin ${destBin.locationCode} has only ${availableDestSpace} units of space available (tried to transfer ${data.quantity}, max capacity: ${destBin.capacity})`);
       }
 
       await tx.inventory.update({

@@ -107,7 +107,7 @@ async function main() {
         code: binCode,
         locationCode,
         rowId: row.id,
-        capacity: randomInt(50, 200),
+        capacity: randomInt(1000, 2500),
         status: 'ACTIVE' as const
       };
       binsToCreate.push(binObj);

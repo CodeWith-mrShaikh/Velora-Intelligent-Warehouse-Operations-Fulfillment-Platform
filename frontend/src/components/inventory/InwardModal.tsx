@@ -54,6 +54,8 @@ export const InwardModal: React.FC<InwardModalProps> = ({ isOpen, onClose, prese
   }, [isOpen, preselectedItem]);
 
   const selectedBin = bins.find(b => b.id === binId);
+  const binFreeSpace = selectedBin ? Math.max(0, selectedBin.capacity - (selectedBin.currentQuantity ?? 0)) : 0;
+  const isBinCapacityExceeded = selectedBin && quantity !== '' && Number(quantity) > binFreeSpace;
 
   const mutation = useMutation({
     mutationFn: inwardStock,
@@ -83,6 +85,10 @@ export const InwardModal: React.FC<InwardModalProps> = ({ isOpen, onClose, prese
     }
     if (!quantity || Number(quantity) <= 0) {
       toast.error('Quantity must be greater than 0');
+      return;
+    }
+    if (isBinCapacityExceeded) {
+      toast.error(`Quantity (${quantity}) exceeds available space (${binFreeSpace} units) in bin ${selectedBin?.locationCode}`);
       return;
     }
 
@@ -130,20 +136,42 @@ export const InwardModal: React.FC<InwardModalProps> = ({ isOpen, onClose, prese
               required
             >
               <option value="">Select a bin</option>
-              {bins.map((b: any) => (
-                <option key={b.id} value={b.id}>
-                  {b.locationCode} (Capacity: {b.currentQuantity ?? 0}/{b.capacity})
-                </option>
-              ))}
+              {bins.map((b: any) => {
+                const space = Math.max(0, b.capacity - (b.currentQuantity ?? 0));
+                return (
+                  <option key={b.id} value={b.id}>
+                    {b.locationCode} — Available Space: {space} units (Capacity: {b.capacity})
+                  </option>
+                );
+              })}
             </select>
           )}
           {selectedBin && (
-            <div className="mt-1 text-xs text-slate-500 flex justify-between">
-              <span>Current Stock: <b>{selectedBin.currentQuantity ?? 0}</b></span>
-              <span>Available Space: <b className="text-blue-600">{Math.max(0, selectedBin.capacity - (selectedBin.currentQuantity ?? 0))} units</b></span>
+            <div className="mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-900 flex justify-between items-center">
+              <div>
+                <span className="font-semibold">{selectedBin.locationCode}</span>
+                <span className="text-slate-600 ml-2">Stock: {selectedBin.currentQuantity ?? 0}</span>
+              </div>
+              <div>
+                <span className="text-slate-600">Available Space: </span>
+                <b className="text-blue-700 font-bold text-sm">{binFreeSpace} units</b>
+                <span className="text-slate-400 ml-1">/ {selectedBin.capacity}</span>
+              </div>
             </div>
           )}
         </div>
+
+        {isBinCapacityExceeded && (
+          <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg text-xs text-amber-900 flex items-start space-x-2">
+            <span className="text-base leading-none">⚠️</span>
+            <div>
+              <p className="font-semibold">Capacity Warning</p>
+              <p className="mt-0.5">
+                Bin <b>{selectedBin?.locationCode}</b> only has <b>{binFreeSpace} units</b> of available space, but you entered <b>{quantity} units</b>.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Quantity to Inward</label>

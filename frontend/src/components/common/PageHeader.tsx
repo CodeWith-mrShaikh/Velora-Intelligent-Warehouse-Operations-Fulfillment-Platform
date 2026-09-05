@@ -10,7 +10,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, description, chil
   return (
     <div className="sm:flex sm:items-center sm:justify-between mb-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">{title}</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{title}</h1>
         {description && (
           <p className="mt-1 text-sm text-slate-500">
             {description}
